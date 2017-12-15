@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
-import org.h2.server.TcpServer;
-
 import client.*;
 import serveur.*;
 import services_auth.GestionProtocole;

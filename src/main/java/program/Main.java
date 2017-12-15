@@ -12,20 +12,23 @@ import services_log.JsonLogger;
 
 public class Main {
 	
-	public final static int portAuthServeur = 999;
-	public final static String ipAuthServeur = "127.0.0.1";
-	public final static int taille = 1024;
 	
+	public final static int portServeurChecker = 28414;
+	public final static int portServeurManager = 28415;
+	public final static int portServeurLog = 3244;
+	public final static String ipServeur = "127.0.0.1";
+	public final static int taille = 1024;
+
 	public static void main(String[] args) {
 
 		ListeAuth listauth = new ListeAuth("bd");
 		GestionProtocole gestionprotoc = new GestionProtocole(listauth);
 		JsonLogger jsonlog = JsonLogger.getLogger();
 		
-		TCPServeur tcpservchecker = new TCPServeur(gestionprotoc,28414,jsonlog);
-		TCPServeur tcpservmanager = new TCPServeur(gestionprotoc,28415,jsonlog);
-		UDPServeur udpserv = new UDPServeur(gestionprotoc,28414,jsonlog);
-		LOGServeur logserv = new LOGServeur(3244);
+		TCPServeur tcpservchecker = new TCPServeur(gestionprotoc,portServeurChecker,jsonlog);
+		UDPServeur udpserv = new UDPServeur(gestionprotoc,portServeurChecker,jsonlog);
+		TCPServeur tcpservmanager = new TCPServeur(gestionprotoc,portServeurManager,jsonlog);
+		LOGServeur logserv = new LOGServeur(portServeurLog);
 		
 		int nombreManagers = 0;
 		int nombreCheckers = 0;
@@ -84,6 +87,22 @@ public class Main {
 			System.out.print("Veuillez saisir le nom du Checker numéro " + (i+1) +" :");
 			checker.setNom(s.nextLine());
 			
+			isCheck = true;
+			do {
+				System.out.print("UDP ou TCP ?");		
+				String c = s.nextLine();
+				if (c.startsWith("UDP")){
+					checker.setMode("UDP");
+					isCheck = true;
+				} else if(c.startsWith("TCP")){
+					checker.setMode("TCP");
+					isCheck = true;
+				} else {
+					System.out.print("Commande inconnue. Veuillez ressayer.");
+					isCheck = false;
+				}
+			} while (isCheck != true);
+			nomsCheckers.add(checker);
 			
 			isCheck = true;
 			do {

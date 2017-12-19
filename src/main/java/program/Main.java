@@ -3,15 +3,12 @@ package program;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
-
 import client.*;
 import serveur.*;
 import services_auth.GestionProtocole;
 import services_auth.ListeAuth;
-import services_log.JsonLogger;
 
 public class Main {
-	
 	
 	public final static int portServeurChecker = 28414;
 	public final static int portServeurManager = 28415;
@@ -23,11 +20,10 @@ public class Main {
 
 		ListeAuth listauth = new ListeAuth("bd");
 		GestionProtocole gestionprotoc = new GestionProtocole(listauth);
-		JsonLogger jsonlog = JsonLogger.getLogger();
 		
-		TCPServeur tcpservchecker = new TCPServeur(gestionprotoc,portServeurChecker,jsonlog);
-		UDPServeur udpserv = new UDPServeur(gestionprotoc,portServeurChecker,jsonlog);
-		TCPServeur tcpservmanager = new TCPServeur(gestionprotoc,portServeurManager,jsonlog);
+		TCPServeur tcpservchecker = new TCPServeur(gestionprotoc,portServeurChecker);
+		UDPServeur udpserv = new UDPServeur(gestionprotoc,portServeurChecker);
+		TCPServeur tcpservmanager = new TCPServeur(gestionprotoc,portServeurManager);
 		LOGServeur logserv = new LOGServeur(portServeurLog);
 		
 		int nombreManagers = 0;
@@ -37,12 +33,12 @@ public class Main {
 		int i = 0;
 		boolean isEntier = true;
 		boolean isCheck = true;
-		
+		Scanner s;
 		
 		/***  NOMBRE DE MANAGERS  ***/
 		do {
 			System.out.print("Veuillez saisir le nombre de managers : ");
-			Scanner s = new Scanner(System.in);
+			 s = new Scanner(System.in);
 			try {
 				nombreManagers = s.nextInt();
 			} catch (InputMismatchException e) {
@@ -56,7 +52,7 @@ public class Main {
 		isEntier = true;
 		do {
 			System.out.print("Veuillez saisir le nombre de checkers : ");
-			Scanner s = new Scanner(System.in);
+			s = new Scanner(System.in);
 			try {
 				nombreCheckers = s.nextInt();
 			} catch (InputMismatchException e) {
@@ -69,7 +65,7 @@ public class Main {
 		/***  IDENTIFICATION DES MANAGERS  ***/
 		for(i=0; i<nombreManagers; i++) {
 			Manager manager = new Manager(i+1);
-			Scanner s = new Scanner(System.in);
+			s = new Scanner(System.in);
 			System.out.print("\n");
 			System.out.print("Veuillez saisir le nom du Manager numéro " + (i+1) +" :");
 			manager.setNom(s.nextLine());
@@ -82,7 +78,7 @@ public class Main {
 		/***  IDENTIFICATION DES CHECKERS  ***/
 		for(i=0; i<nombreCheckers; i++) {
 			Checker checker = new Checker(i+1);
-			Scanner s = new Scanner(System.in);
+			s = new Scanner(System.in);
 			System.out.print("\n");
 			System.out.print("Veuillez saisir le nom du Checker numéro " + (i+1) +" :");
 			checker.setNom(s.nextLine());
@@ -118,6 +114,7 @@ public class Main {
 			} while (isCheck != true);
 			nomsCheckers.add(checker);
 		}
+		s.close();
 		
 		
 		/***  LANCEMENT DES SERVEURS  ***/
@@ -131,6 +128,11 @@ public class Main {
 		ttcpc.start();
 		tlog.start();
 		
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		
 		/***  LANCEMENT DES MANAGERS  ***/
 		for(i=0; i<nombreManagers; i++) {

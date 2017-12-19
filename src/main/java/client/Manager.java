@@ -6,14 +6,18 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import org.apache.log4j.Logger;
 import program.Main;
 
 public class Manager extends Client implements Runnable {
 	
+	private static Logger logger = Logger.getLogger(Manager.class);
 	String reponse;
 	Socket leSocket;
 	PrintStream fluxSortieSocket;
 	BufferedReader fluxEntreeSocket;
+	String mode;
+	byte tampon[] = new byte[Main.taille];
 	
 	public Manager(int i) {
 		super(i);
@@ -21,22 +25,20 @@ public class Manager extends Client implements Runnable {
 
 	@Override
 	public void run() {
+		logger.info("Le manager " + nomClient + " se connecte en TCP");	
 		try {
-			System.out.println("******** Manager " + getNom() + " Starting ******** \n");
-			leSocket = new Socket(Main.ipAuthServeur, Main.portAuthServeur);
+			leSocket = new Socket(Main.ipServeur, Main.portServeurChecker);
 			BufferedReader br = new BufferedReader(new InputStreamReader(leSocket.getInputStream()));
 			PrintStream ps = new PrintStream(leSocket.getOutputStream());
 			ps.println(getRequete());
 			String rep = br.readLine();
-			System.out.println("******** Server Response For Manager " + getNom() + " : " + rep + "  ******** \n");
+			logger.info("Le manager " + nomClient + " reçoit : " + rep);
 			leSocket.close();
 		} 
 		catch (UnknownHostException ex) {
-			System.err.println("Machine inconnue : " + ex);
-			ex.printStackTrace();
+			logger.error("Machine du manager " + nomClient + " inconnue", ex);
 		} catch (IOException ex) {
-			System.err.println("Erreur : " + ex);
-			ex.printStackTrace();
+			logger.error("Erreur pendant la connexion entre " + nomClient + " et le serveur", ex);
 		}
 	}
 

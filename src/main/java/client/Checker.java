@@ -10,15 +10,12 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-
 import org.apache.log4j.Logger;
-
 import program.Main;
-import serveur.LOGServeur;
 
 public class Checker extends Client implements Runnable {
 
-	private static Logger logger = Logger.getLogger(LOGServeur.class);
+	private static Logger logger = Logger.getLogger(Checker.class);
 	String reponse;
 	Socket leSocket;
 	PrintStream fluxSortieSocket;
@@ -61,7 +58,7 @@ public class Checker extends Client implements Runnable {
 			} catch (UnknownHostException ex) {
 				logger.error("Machine du checker " + nomClient + " inconnue", ex);
 			} catch (IOException ex) {
-				logger.error("Erreur pendant la connexion entre " + nomClient + " et le server", ex);
+				logger.error("Erreur pendant la connexion entre " + nomClient + " et le serveur", ex);
 			}
 			break;
 			
@@ -82,7 +79,7 @@ public class Checker extends Client implements Runnable {
 			catch (UnknownHostException ex) {
 				logger.error("Machine du checker " + nomClient + " inconnue", ex);
 			} catch (IOException ex) {
-				logger.error("Erreur pendant la connexion entre " + nomClient + " et le server", ex);
+				logger.error("Erreur pendant la connexion entre " + nomClient + " et le serveur", ex);
 			}
 			break;
 			

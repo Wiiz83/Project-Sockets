@@ -41,13 +41,6 @@ public class LOGServeur implements Runnable {
 							BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 							String req = br.readLine();
 							logger.info("LOG Server receives : " + req);
-							
-							BufferedWriter bw = new BufferedWriter(new FileWriter("../resources/logFile.txt",true)); 
-							bw.write(req); 
-							bw.newLine(); 
-							bw.flush(); 
-							bw.close();
-							 
 						} catch (IOException e) {
 							logger.error("An I/O exception has occurred", e);
 						}

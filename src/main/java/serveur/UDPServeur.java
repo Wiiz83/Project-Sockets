@@ -3,6 +3,7 @@ package serveur;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
 
 import org.apache.log4j.Logger;
@@ -14,6 +15,7 @@ import services_log.JsonLogger;
 public class UDPServeur implements Runnable {
 	private GestionProtocole gp;
 	private int port;
+	volatile boolean keepProcessing = true;
 	private static Logger logger = Logger.getLogger(UDPServeur.class);
 
 	/*** Server Constructor ****/
@@ -22,32 +24,53 @@ public class UDPServeur implements Runnable {
 		this.port = port;
 	}
 	
-	@Override
 	public void run() {
-		logger.info("***** UDP Server starting *****");
-		byte[] tampon = new byte[Main.taille];
+		logger.info("***** UDP Server Starting *****");
 		try {
-			DatagramSocket ds = new DatagramSocket(port);
-			while (true) {
-				DatagramPacket dp = new DatagramPacket(tampon, tampon.length);
-				try {
-					ds.receive(dp);
-					//JsonLogger.logInfo("Le serveur UDP accepte une connexion");
-					String req = new String(tampon, 0, dp.getLength()); // extraction de la requete
-					String rep = gp.traiterReq(req); // appel gestionprotocol pour traiter la requete
-					dp.setData(rep.getBytes());
-					
-					String[] tabUDP = req.split(" ");
-					JsonLogger.log(dp.getAddress().toString(), port, "UDP", tabUDP[0], tabUDP[1], rep);
-					
-					ds.send(dp);
-				} catch (IOException e) {
-					e.printStackTrace();
-					ds.close();
-				}
-			}
+			DatagramSocket serverSocket = new DatagramSocket(this.port);
+			process(serverSocket);
 		} catch (SocketException e) {
-			logger.error("An error creating or accessing a Socket has occurred", e);
+			e.printStackTrace();
 		}
 	}
+	
+	void process(DatagramSocket serverSocket ) {
+		if (serverSocket == null)
+			return;
+
+        byte[] receiveData = new byte[Main.taille];
+        byte[] sendData = new byte[Main.taille];
+        while(keepProcessing)
+           {
+              
+              try {
+            	 DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+				 serverSocket.receive(receivePacket);
+				// logger.info("UDP Server got client");
+	  //           String sentence = new String( receivePacket.getData());
+	             InetAddress IPAddress = receivePacket.getAddress();
+	             
+	            // int port = receivePacket.getPort();    // port du client / change pour chaque client
+	             
+	             String req = new String(receiveData, 0, receivePacket.getLength()); 
+	             String rep = gp.traiterReq(req);
+	             receivePacket.setData(rep.getBytes());
+				 String[] tabUDP = req.split(" ");
+				 JsonLogger.log(receivePacket.getAddress().toString(), port, "UDP", tabUDP[0], tabUDP[1], rep);
+	             
+	             String capitalizedSentence = rep;
+	             sendData = capitalizedSentence.getBytes();
+	             DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+	             serverSocket.send(sendPacket);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+ 
+           }
+		
+	}
+
+	
+	
+	
 }

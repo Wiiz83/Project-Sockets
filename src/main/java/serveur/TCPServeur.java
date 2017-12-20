@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import org.apache.log4j.Logger;
 import services_auth.GestionProtocole;
 import services_log.JsonLogger;
@@ -26,53 +25,54 @@ public class TCPServeur implements Runnable {
 	}
 	
 	public void run() {
-		logger.info("***** TCP Server Starting *****");
+		try {
+			socketEcoute = new ServerSocket(port);
+			logger.info("***** TCP Server starting *****");
+			processTCP();
+		} catch (IOException e) {
+			logger.error("An I/O exception has occurred", e);
+		}
+	}
+
+	public void processTCP() {
 		while (keepProcessing) {
 			try {
-				socketEcoute = new ServerSocket(port);
 				Socket socket = socketEcoute.accept();
-				logger.info("TCP Server got client");
-				process(socket);
-			} catch (Exception e) {
-				handle(e);
+				//logger.info("TCP Server accepts a connection");
+				Runnable clientHandler = new Runnable() {
+					public void run() {
+						try {
+							//logger.info("TCP Server getting message");
+							BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+							PrintStream ps = new PrintStream(socket.getOutputStream());
+							String req = br.readLine();
+							//logger.info("TCP Server got message : " + req);
+							//Thread.sleep(1000);
+							String rep = gp.traiterReq(req);
+							//logger.info("TCP Server sending reply : " + rep);
+							String[] tab = req.split(" ");
+							JsonLogger.log(socket.getInetAddress().toString(), port, "TCP", tab[0], tab[1], rep);
+							ps.println(rep);
+							//logger.info("TCP Server reply sent");
+							closeIgnoringException(socket);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				};
+
+				Thread serveurASConnection = new Thread(clientHandler);
+				Thread.sleep(1000);
+				serveurASConnection.start();
+
+			} catch (IOException e) {
+				logger.error("An I/O exception has occurred", e);
+			} catch (InterruptedException e) {
+				logger.error("A thread has been interrupted before or during its activity", e);
 			}
 		}
 	}
-	
-	void process(Socket socket) {
-		if (socket == null)
-			return;
 
-		Runnable clientHandler = new Runnable() {
-			public void run() {
-				try {
-					logger.info("TCP Server getting message");
-					BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-					PrintStream ps = new PrintStream(socket.getOutputStream());
-					String req = br.readLine();
-					logger.info("TCP Server got message : " + req);
-					Thread.sleep(1000);
-					String rep = gp.traiterReq(req);
-					logger.info("TCP Server sending reply : " + rep);
-					String[] tab = req.split(" ");
-					JsonLogger.log("127.0.0.1", port, "TCP", tab[0], tab[1], rep);
-					ps.println(rep);
-					logger.info("TCP Server reply sent");
-					closeIgnoringException(socket);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		};
-		Thread clientConnection = new Thread(clientHandler);
-		clientConnection.start();
-	}
-
-	private void handle(Exception e) {
-		if (!(e instanceof SocketException)) {
-			e.printStackTrace();
-		}
-	}
 
 	public void stopProcessing() {
 		keepProcessing = false;
@@ -92,6 +92,7 @@ public class TCPServeur implements Runnable {
 			try {
 				serverSocket.close();
 			} catch (IOException ignore) {
+				
 			}
 	}
 

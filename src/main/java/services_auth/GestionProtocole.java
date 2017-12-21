@@ -8,9 +8,18 @@ public class GestionProtocole {
 	}
 
 	synchronized public String traiterReq(String req) {
-		String[] reqElem = req.split(" ");
-		String login = reqElem[1];
-		String passwd = reqElem[2];
+		
+		String[] reqElem = null;
+		String login = null;
+		String passwd = null;
+		
+		try {
+			reqElem = req.split(" ");
+			login = reqElem[1];
+			passwd = reqElem[2];
+		} catch(ArrayIndexOutOfBoundsException e) {
+			System.out.println("An array has been accessed with an illegal index");
+		}
 		
 		switch (reqElem[0]) {
 		case "CHK":

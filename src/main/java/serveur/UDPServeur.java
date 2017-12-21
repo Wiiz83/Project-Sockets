@@ -50,16 +50,16 @@ public class UDPServeur implements Runnable {
 	  //           String sentence = new String( receivePacket.getData());
 	             InetAddress IPAddress = receivePacket.getAddress();
 	             
-	            // int port = receivePacket.getPort();    // port du client / change pour chaque client
-	             
 	             String req = new String(receiveData, 0, receivePacket.getLength()); 
 	             String rep = gp.traiterReq(req);
+	             
 	             receivePacket.setData(rep.getBytes());
 				 String[] tabUDP = req.split(" ");
-				 JsonLogger.log(receivePacket.getAddress().toString(), port, "UDP", tabUDP[0], tabUDP[1], rep);
+				 JsonLogger.log(receivePacket.getAddress().toString(), this.port, "UDP", tabUDP[0], tabUDP[1], rep);
 	             
 	             String capitalizedSentence = rep;
 	             sendData = capitalizedSentence.getBytes();
+	             int port = receivePacket.getPort();    // port du client / change pour chaque client
 	             DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
 	             serverSocket.send(sendPacket);
 			} catch (IOException e) {

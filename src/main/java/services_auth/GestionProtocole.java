@@ -9,45 +9,44 @@ public class GestionProtocole {
 
 	synchronized public String traiterReq(String req) {
 		
-		String[] reqElem = null;
+		String[] reqElem = req.split(" ");
 		String login = null;
 		String passwd = null;
 		
-		try {
-			reqElem = req.split(" ");
+		if(reqElem.length != 3) {
+			System.out.println("Erreur, requête incorrecte");
+		} else {
 			login = reqElem[1];
 			passwd = reqElem[2];
-		} catch(ArrayIndexOutOfBoundsException e) {
-			System.out.println("An array has been accessed with an illegal index");
 		}
 		
 		switch (reqElem[0]) {
-		case "CHK":
-			if (auth.tester(login, passwd)) {
-				return "GOOD";
-			} else {
-				return "BAD";
-			}
-		case "ADD":
-			if (auth.creer(login, passwd)) {
-				return "DONE";
-			} else {
-				return "ERROR login/pwd existants";
-			}
-		case "DEL":
-			if (auth.supprimer(login, passwd)) {
-				return "GOOD";
-			} else {
-				return "BAD";
-			}
-		case "MOD":
-			if (auth.mettreAJour(login, passwd)) {
-				return "GOOD";
-			} else {
-				return "BAD";
-			}
-		default:
-			return "Error in request";
+			case "CHK":
+				if (auth.tester(login, passwd)) {
+					return "GOOD";
+				} else {
+					return "BAD";
+				}
+			case "ADD":
+				if (auth.creer(login, passwd)) {
+					return "DONE";
+				} else {
+					return "ERROR";
+				}
+			case "DEL":
+				if (auth.supprimer(login, passwd)) {
+					return "DONE";
+				} else {
+					return "ERROR";
+				}
+			case "MOD":
+				if (auth.mettreAJour(login, passwd)) {
+					return "DONE";
+				} else {
+					return "ERROR";
+				}
+			default:
+				return "ERROR";
 		}
 	}
 }
